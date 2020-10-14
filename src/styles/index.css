@@ -19,6 +19,25 @@
   *
   * @import "tailwindcss/components";
   */
+
+  .btn {
+    @apply bg-blue-500 text-white font-bold py-2 px-4 rounded;
+  }
+
+  .btn:hover {
+    @apply bg-blue-700 outline-none shadow-outline;
+  }
+
+  .btn:focus {
+    @apply outline-none shadow-outline;
+  }
+
+  @screen sm {
+    .btn {
+      /* Small Styles! */
+    }
+  }
+
 @tailwind components;
 /**
   * Here you would add any of your custom component classes; stuff that you'd
