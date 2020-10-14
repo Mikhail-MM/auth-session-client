@@ -9,7 +9,7 @@ export const Page = ({ user, onLogin, onLogout, onCreateAccount }) => (
     <Header user={user} onLogin={onLogin} onLogout={onLogout} onCreateAccount={onCreateAccount} />
 
     <section>
-      <h2>Pages in Storybook</h2>
+      <h2 className="bg-gray-700">Pages in Storybook, OK?</h2>
       <p>
         We recommend building UIs with a{' '}
         <a href="https://componentdriven.org" target="_blank" rel="noopener noreferrer">
