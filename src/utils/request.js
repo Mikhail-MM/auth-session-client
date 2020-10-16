@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-async function makeRequest(arg1, parsedConfig = parseRequestConfig(arg1)) {
+async function makeRequest(requestConfig, cancelToken, parsedConfig = parseRequestConfig(requestConfig, cancelToken)) {
   try {
     const { data } = await axios(parsedConfig);
     return data;
@@ -16,21 +16,21 @@ async function makeRequest(arg1, parsedConfig = parseRequestConfig(arg1)) {
   }
 }
 
-function parseRequestConfig(arg1) {
-  if (typeof arg1 === 'string') {
+function parseRequestConfig(requestConfig, cancelToken) {
+  if (typeof requestConfig === 'string') {
     return {
-      url: arg1,
+      url: requestConfig,
       method: 'GET',
     };
   } else {
-    const { url, method, params, headers, data } = arg1;
-
+    const { url, method, params, headers, data } = requestConfig;
     return {
       url: url || 'https://api.example.com',
       method: method || 'GET',
       params: params || {},
       data: data || {},
-      headers: headers || { 'Content-Type': 'application/json' }
+      headers: headers || { 'Content-Type': 'application/json' },
+      cancelToken,
     };
   }
 }

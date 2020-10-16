@@ -5,9 +5,19 @@ import './styles/app.css'
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import { authReducer } from './reducers/authReducer';
+
+const store = configureStore({ 
+  reducer: authReducer
+});
+
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </React.StrictMode>,
   document.getElementById('root')
 );

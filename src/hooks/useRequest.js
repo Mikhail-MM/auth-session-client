@@ -1,7 +1,12 @@
+import axios from 'axios';
+
 import { useState, useEffect } from 'react';
 import { makeRequest } from '../utils/request';
 
+const source = axios.CancelToken.source();
+
 const useRequest = (configuration) => {
+
   const [requestConfig, setRequestConfig] = useState(configuration);
   const [requestState, setRequestState] = useState({
     data: null,
@@ -15,7 +20,7 @@ const useRequest = (configuration) => {
       loading: true,
     }));
 
-    makeRequest(requestConfig)
+    makeRequest(requestConfig, source)
       .then((data) =>
         setRequestState((prevState) => ({
           ...prevState,
@@ -30,6 +35,9 @@ const useRequest = (configuration) => {
           error,
         }))
       );
+
+      return () => source.cancel("The Component Has Unmounted.");
+
   }, [requestConfig]);
 
   return [requestState, setRequestConfig];
