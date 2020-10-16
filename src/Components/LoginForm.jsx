@@ -1,35 +1,26 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { useRequest } from '../hooks/useRequest';
+// import { useRequest } from '../hooks/useRequest';
 import { connect } from 'react-redux';
 
 import { LOG_IN } from '../actions/authActions';
 
-const requestConfig = {url: 'http://www.yahoo.com'};
-
 const mapDispatchToProps = dispatch => {
   return {
-    login: dispatch(LOG_IN)
+    onLogin: (data) => dispatch(LOG_IN(data))
   }
 }
 
-function LoginForm() {
+function LoginForm(props) {
 
   const { register, errors, handleSubmit } = useForm();
   
-  const requestState = useRequest(requestConfig);
-  
-  console.log(requestState);
-
-  const onSubmit = (data) => {
-    console.log(data)
-  };
-  
+  // const requestState = useRequest(requestConfig);
 
   return (
     <div className="w-full max-w-md bg-gray-800">
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(props.onLogin)}
         className=" bg-white shadow-md rounded px-8 py-8 pt-8"
       >
         <div className="px-4 pb-4">
