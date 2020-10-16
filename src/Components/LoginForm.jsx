@@ -12,15 +12,19 @@ const mapDispatchToProps = dispatch => {
 }
 
 function LoginForm(props) {
-
+  const { toast } = props;
+  console.log(toast);
   const { register, errors, handleSubmit } = useForm();
   
   // const requestState = useRequest(requestConfig);
-
+  const onSubmit = (data) => {
+    console.log("Form Click");
+    toast.current.show({severity:'success', summary: 'Success Message', detail:'Message Content', sticky: true});
+  }
   return (
     <div className="w-full max-w-md bg-gray-800">
       <form
-        onSubmit={handleSubmit(props.onLogin)}
+        onSubmit={handleSubmit(onSubmit)}
         className=" bg-white shadow-md rounded px-8 py-8 pt-8"
       >
         <div className="px-4 pb-4">

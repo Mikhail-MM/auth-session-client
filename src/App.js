@@ -1,5 +1,10 @@
-import React from "react";
+import React, {useRef} from "react";
 import { connect } from 'react-redux';
+import { Toast } from 'primereact/toast';
+
+import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
 
 import LoginForm from './Components/LoginForm';
 import RegisterForm from './Components/RegisterForm';
@@ -10,10 +15,12 @@ const mapStateToProps = state => {
 }
 
 function App(props) {
-  console.log(props.isAuthenticated, props.user);
+  const toast = useRef(null);
+  console.log(toast);
   return (
     <div className="App h-full flex justify-center items-center">
-      <LoginForm />
+      <Toast ref={toast} />
+      <LoginForm toast={toast}/>
       <RegisterForm />
     </div>
   );

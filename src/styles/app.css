@@ -7,3 +7,8 @@ body {
   height: 100%;
   margin: 0;
 }
+
+.p-toast .p-toast-message .p-toast-message-content {
+  /* Prime-React Toast Override (Extra space on the left? */
+  border-left: 0px;
+}
