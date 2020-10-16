@@ -2,11 +2,13 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useRequest } from './hooks/useRequest';
 
+const requestConfig = {url: 'http://www.yahoo.com'};
+
 function LoginForm() {
   const { register, errors, handleSubmit } = useForm();
-  // const requestState = useRequest({ url: 'yahoo.com' });
+  const requestState = useRequest(requestConfig);
 
-  // console.log(requestState);
+  console.log(requestState);
 
   const onSubmit = (data) => {
     console.log(data)

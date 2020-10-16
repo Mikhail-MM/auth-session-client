@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { makeRequest } from '../utils/request';
 
-const useRequest = (requestConfig) => {
+const useRequest = (configuration) => {
+  const [requestConfig, setRequestConfig] = useState(configuration);
   const [requestState, setRequestState] = useState({
     data: null,
     loading: false,
@@ -31,7 +32,7 @@ const useRequest = (requestConfig) => {
       );
   }, [requestConfig]);
 
-  return requestState;
+  return [requestState, setRequestConfig];
 };
 
 export { useRequest };

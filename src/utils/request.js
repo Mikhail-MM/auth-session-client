@@ -23,12 +23,14 @@ function parseRequestConfig(arg1) {
       method: 'GET',
     };
   } else {
-    const { url, method, params, data } = arg1;
+    const { url, method, params, headers, data } = arg1;
+
     return {
       url: url || 'https://api.example.com',
       method: method || 'GET',
       params: params || {},
       data: data || {},
+      headers: headers || { 'Content-Type': 'application/json' }
     };
   }
 }
