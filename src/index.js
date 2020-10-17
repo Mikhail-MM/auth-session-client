@@ -4,7 +4,7 @@ import './styles/tailwind.css';
 import './styles/app.css'
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-
+import { BrowserRouter as Router } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { authReducer } from './reducers/authReducer';
@@ -16,7 +16,9 @@ const store = configureStore({
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <Router>
+        <App />
+      </Router>
     </Provider>
   </React.StrictMode>,
   document.getElementById('root')

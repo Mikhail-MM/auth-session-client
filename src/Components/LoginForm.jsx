@@ -13,7 +13,7 @@ const mapDispatchToProps = dispatch => {
 
 function LoginForm(props) {
   const { toast } = props;
-  console.log(toast);
+  // console.log(toast);
   const { register, errors, handleSubmit } = useForm();
   
   // const requestState = useRequest(requestConfig);
