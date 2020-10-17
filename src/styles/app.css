@@ -1,5 +1,5 @@
 :root {
-  --routeDelay: 500ms;
+  --routeDelay: 1000ms;
 }
 
 #root {
@@ -13,8 +13,6 @@ body {
   height: 100%;
   margin: 0;
 }
-
-var(--animationDelay): 2000mx;
 
 .p-toast .p-toast-message .p-toast-message-content {
   /* Prime-React Toast Override (Extra space on the left? */
@@ -30,23 +28,30 @@ var(--animationDelay): 2000mx;
 .page-enter {
   opacity: 0;
   transform: scale(1.1);
+  transition: opacity var(--routeDelay), transform var(--routeDelay);
 }
 
 .page-enter-active {
   opacity: 1;
   transform: scale(1);
   /* we MUST put !important here so react finishes animating out the first transition before starting the old */
-  transition-delay: var(--routeDelay) !important;
+  /* transition-delay: var(--routeDelay) !important; */
   transition: opacity var(--routeDelay), transform var(--routeDelay);
+}
+
+.page-enter-done {
+  transform: scale(1);
 }
 
 .page-exit {
   opacity: 1;
   transform: scale(1);
+  transition: opacity var(--routeDelay), transform var(--routeDelay);
 }
 
 .page-exit-active {
   opacity: 0;
   transform: scale(0.9);
+
   transition: opacity var(--routeDelay), transform var(--routeDelay);
 }
