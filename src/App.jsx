@@ -1,13 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { Toast } from 'primereact/toast';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useLocation,
-} from 'react-router-dom';
+import { CSSTransition } from 'react-transition-group';
+import { Route, useLocation } from 'react-router-dom';
 
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -27,32 +22,54 @@ const mapStateToProps = (state) => {
 
 const routes = [
   { path: '/login', Component: LoginForm },
-  { path: '/register', Component: RegisterForm }
+  { path: '/register', Component: RegisterForm },
 ];
 
-function App(props) {
+const routeLayouts = {
+  '/login': 'centered',
+  '/register': 'normal',
+  '/': 'normal',
+};
+
+const tailwindContainerLayouts = {
+  centered: 'App h-full flex justify-center items-center',
+  normal: 'App h-full flex justify-center items-start',
+};
+
+function App() {
   const toast = useRef(null);
+
+  const location = useLocation();
+
+  const layout = useMemo(() => {
+    return tailwindContainerLayouts[routeLayouts[location.pathname]];
+  }, [location.pathname]);
+
+  console.log(layout);
+
   return (
     <Page>
       <Header />
       <Toast ref={toast} />
-      <div className="App h-full flex justify-center items-center">
-          {routes.map(({ path, Component }, index) => {
-            return <Route key={path} exact path={path}>
+      <div className={layout}>
+        {routes.map(({ path, Component }) => {
+          return (
+            <Route key={path} exact path={path}>
               {({ match }) => (
                 <CSSTransition
                   in={match != null}
-                  timeout={300}
+                  timeout={500}
                   classNames="page"
                   unmountOnExit
                 >
-                  <div className="page">
+                  <div className="w-full max-w-md absolute">
                     <Component />
                   </div>
                 </CSSTransition>
               )}
             </Route>
-          })}
+          );
+        })}
       </div>
     </Page>
   );

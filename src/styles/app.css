@@ -13,10 +13,10 @@ body {
   border-left: 0px;
 }
 
-.page {
-  position: absolute;
+.absolute-funbag {
   width: 100%;
   max-width: 28rem;
+  position: absolute;
 }
 
 .page-enter {
@@ -27,7 +27,9 @@ body {
 .page-enter-active {
   opacity: 1;
   transform: scale(1);
-  transition: opacity 300ms, transform 300ms;
+  /* we MUST put !important here so react finishes animating out the first transition before starting the old */
+  transition-delay: 500ms !important;
+  transition: opacity 500ms, transform 500ms;
 }
 
 .page-exit {
@@ -38,5 +40,5 @@ body {
 .page-exit-active {
   opacity: 0;
   transform: scale(0.9);
-  transition: opacity 300ms, transform 300ms;
+  transition: opacity 500ms, transform 500ms;
 }
