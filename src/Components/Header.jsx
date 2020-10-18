@@ -15,6 +15,9 @@ function Header() {
           <li>
             <Link className="text-indigo-500 px-2" to="/register">Register</Link>
           </li>
+          <li>
+            <Link className="text-indigo-500 px-2" to="/">Home</Link>
+          </li>
         </ul>
       </nav>
     </header>

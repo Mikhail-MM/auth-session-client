@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
+import classNames from 'classnames';
 import { Toast } from 'primereact/toast';
 import { CSSTransition } from 'react-transition-group';
 import { Route, useLocation } from 'react-router-dom';
@@ -45,6 +46,7 @@ const mapStateToProps = (state) => {
 const routes = [
   { path: '/login', Component: LoginForm },
   { path: '/register', Component: RegisterForm },
+  { path: '/', Component: SplashPlaceholder },
 ];
 
 const routeLayouts = {
@@ -53,10 +55,11 @@ const routeLayouts = {
   '/': 'normal',
 };
 
-const tailwindContainerLayouts = {
-  centered: 'App h-full flex justify-center items-center',
-  normal: 'App h-full flex justify-center items-start',
-};
+
+const tailwindLayouts = {
+  centered: 'flex justify-center items-center', 
+  normal: 'justify-center items-start'
+}
 
 /*
   Animating Routes in React Router:
@@ -106,6 +109,13 @@ const tailwindContainerLayouts = {
 */
 
 const routeTransitionDelay = 1000;
+
+function SplashPlaceholder() {
+  return <div className="w-full max-w-md bg-gray-800">
+    <h1>Welcome to Posty!</h1>
+    <h4>Log In to Continue</h4>
+  </div>
+}
 function App({ user, isAuthenticated, onLogin }) {
   console.log({ user, isAuthenticated });
   const location = useLocation();
@@ -148,7 +158,7 @@ function App({ user, isAuthenticated, onLogin }) {
     <Page>
       <Header />
       <Toast ref={toast} position="bottom-right" />
-      <div className={tailwindContainerLayouts[layout]}>
+      <div className="App h-full relative overflow-hidden">
         {routes.map(({ path, Component }) => {
           return (
             <Route key={path} exact path={path}>
@@ -156,6 +166,7 @@ function App({ user, isAuthenticated, onLogin }) {
                 <CSSTransition
                   in={match != null}
                   timeout={routeTransitionDelay}
+                  appear={true}
                   classNames="page"
                   unmountOnExit
                 >
@@ -165,9 +176,11 @@ function App({ user, isAuthenticated, onLogin }) {
                         ? `${routeTransitionDelay}ms`
                         : '0ms',
                     }}
-                    className="w-full max-w-md absolute"
+                    className="absolute inset-0"
                   >
-                    <Component toast={toast} />
+                    <div className={ classNames("w-full h-full flex", tailwindLayouts[layout])}>
+                      <Component toast={toast} />
+                    </div>
                   </div>
                 </CSSTransition>
               )}

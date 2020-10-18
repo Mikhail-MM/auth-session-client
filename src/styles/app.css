@@ -25,33 +25,51 @@ body {
   position: absolute;
 }
 
+.page-appear {
+  opacity: 0;
+  transform: translateY(-2rem);
+  transition: opacity var(--routeDelay), transform var(--routeDelay);
+}
+
+.page-appear-active {
+  opacity: 1;
+  transform: translateY(0rem);
+  /* we MUST put !important here so react finishes animating out the first transition before starting the old */
+  /* transition-delay: var(--routeDelay) !important; */
+  transition: opacity var(--routeDelay), transform var(--routeDelay);
+}
+
+.page-appear-done {
+  transform: translateY(0rem);
+}
+
 .page-enter {
   opacity: 0;
-  transform: scale(1.1);
+  transform: translateY(-2rem);
   transition: opacity var(--routeDelay), transform var(--routeDelay);
 }
 
 .page-enter-active {
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(0rem);
   /* we MUST put !important here so react finishes animating out the first transition before starting the old */
   /* transition-delay: var(--routeDelay) !important; */
   transition: opacity var(--routeDelay), transform var(--routeDelay);
 }
 
 .page-enter-done {
-  transform: scale(1);
+  transform: translateY(0rem);
 }
 
 .page-exit {
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(0rem);
   transition: opacity var(--routeDelay), transform var(--routeDelay);
 }
 
 .page-exit-active {
   opacity: 0;
-  transform: scale(0.9);
+  transform: translateY(-2rem);
 
   transition: opacity var(--routeDelay), transform var(--routeDelay);
 }
