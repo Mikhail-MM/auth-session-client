@@ -5,6 +5,8 @@ import classNames from 'classnames';
 import { useForm } from 'react-hook-form';
 import { connect } from 'react-redux';
 
+import { Message } from 'primereact/message';
+
 import { parseAxiosError } from '../utils/network/parseAxiosError';
 import { LOG_IN } from '../actions/authActions';
 
@@ -24,13 +26,15 @@ const requestConfiguration = {
 };
 
 function LoginForm({ toast, onLogin }) {
-  
   const history = useHistory();
 
   const [loading, setLoading] = useState(false);
 
-  const { register, errors, handleSubmit } = useForm();
-
+  const { register, errors, handleSubmit } = useForm({
+    reValidateMode: 'onSubmit',
+    criteriaMode: 'all',
+  });
+  console.log(errors);
   const onSubmit = (formData) => {
     setLoading(true);
     axios({
@@ -38,13 +42,13 @@ function LoginForm({ toast, onLogin }) {
       data: formData,
     })
       .then(({ data }) => {
-        const { id } = data;
+        const { user_id } = data;
         toast.current.show({
           sticky: true,
           severity: 'success',
-          summary: `Logged in as ${formData.email} (User ${id})`,
+          summary: `Logged in as ${formData.email} (User ${user_id})`,
         });
-        onLogin({ id });
+        onLogin({ user_id });
         history.push('/blog');
       })
       .catch((err) => {
@@ -79,7 +83,9 @@ function LoginForm({ toast, onLogin }) {
             className="form-input"
             placeholder="Johnbull@example.com"
           />
-          {errors?.email?.message}
+          {errors?.email?.message && (
+            <Message severity="warn" text={errors.email.message} />
+          )}
         </div>
         <div className="px-4 pb-4">
           <label htmlFor="password" className="text-sm block font-bold pb-2">
@@ -95,7 +101,9 @@ function LoginForm({ toast, onLogin }) {
             className="form-input"
             placeholder="Enter your password"
           />
-          {errors?.password?.message}
+          {errors?.password?.types?.required && (
+            <Message severity="warn" text={errors.password.types.required} />
+          )}
         </div>
         <div>
           <input

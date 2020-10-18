@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
@@ -16,7 +16,7 @@ import Header from './Components/Header';
 
 import LoginForm from './Components/LoginForm';
 import RegisterForm from './Components/RegisterForm';
-
+import PostForm from './Components/PostForm';
 import { parseAxiosError } from './utils/network/parseAxiosError';
 
 import { LOG_IN } from './actions/authActions';
@@ -27,6 +27,12 @@ const { rootURI } = config;
 
 const requestConfiguration = {
   url: `${rootURI}/users/checkSession`,
+  method: 'GET',
+  withCredentials: true,
+};
+
+const postsRequestconfiguration = {
+  url: `${rootURI}/posts`,
   method: 'GET',
   withCredentials: true,
 };
@@ -61,53 +67,6 @@ const tailwindLayouts = {
   normal: 'justify-center items-start',
 };
 
-/*
-  Animating Routes in React Router:
-
-    The issue with animating routes is that React Router is concerned primarily with un-mounting an old component and re-mounting a new component immediately, when a route change is registered.
-    For a pair of transitions, we actually want both routes rendered simultaneously - both routes actually need to be mounted until the exiting transition is complete for the route that we just navigated away from, 
-    and until the entering transition can complete.
-
-    The other issue is delaying the transition - React Transition Group will begin both sets of transitions immediately. That means that the exiting route and entering route will begin their animations at the same time,
-    and there may be an overlap, which is a problem if you want a clear, staggered transition.
-
-    The solution is to introduce a transition delay - at first I placed this `transition-delay` (matching the duration of the total transition time) directly in CSS on the page-enter-active class 
-    This would essentially trigger the exit transition but force CSS to delay the enterance of the newly mounted component.
-
-    However, this was broken in chrome.
-
-    The solution was to manage the property directly on the child element rendered by CSSTransition:
-
-      <div
-        style={{
-          transitionDelay: match
-            ? `${routeTransitionDelay}ms`
-            : '0ms',
-        }}
-        className="w-full max-w-md absolute"
-      >
-      
-    A second challenge was managing the layout of the container.
-
-    Problem: Both routes must be rendered simultaneously
-
-    Sometimes, routes are entire pages.
-    We generally don't design apps to render two entire page containers sequentially. Logically, only one would render.
-    In this situation, it's easiest if the container of our route contents is `position: absolute;`
-
-    Alignment becomes a problem, for example, if we want to transition out a center-aligned absolute container and transition in a flex-start aligned absolute container.
-    When these alignment containers were rendered inside of the CSSTransition, the boundaries of the page overflowed and I was unable to solve why. 
-
-    The solution was to store the alignment as state in the React component. 
-
-    The alignment container would house the entire array of transitionable routes.
-
-    We used the `useLocation()` hook to track the location props injected by the Router on each render of App.
-
-    We pass the path.name as a dependency to useEffect, so each time the path changed, we were able to determine what the alignment of that route's contents should be, and we triggered a state change
-    on a `setTimeout` callback that used the transitionDelay to make the layout change just as the exiting route finished its exit transition.
-*/
-
 const routeTransitionDelay = 1000;
 
 function SplashPlaceholder() {
@@ -119,9 +78,67 @@ function SplashPlaceholder() {
   );
 }
 
-function Blog() {
-  return <div>Blog Component</div>;
+function Blog({ toast }) {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    if (mounted) setLoading(true);
+    axios(postsRequestconfiguration)
+      .then(({ data }) => {
+        if (mounted) setPosts(data);
+      })
+      .catch((err) => {
+        const parsed = parseAxiosError(err).message;
+        if (mounted) setError(parsed);
+      })
+      .finally(() => setLoading(false));
+    return () => (mounted = false);
+  }, []);
+
+  useEffect(() => {
+    if (error) {
+      toast.current.show({
+        sticky: true,
+        severity: 'error',
+        summary: 'Houson, we have a problem...',
+        detail: error,
+      });
+    }
+  }, [toast, error]);
+
+  return (
+    <div>
+      <h1> Posts </h1>
+      <PostForm toast={toast} />
+      <Feed
+        loading={loading}
+        setLoading={setLoading}
+        posts={posts}
+        toast={toast}
+      />
+    </div>
+  );
 }
+
+function Feed({ posts }) {
+  return (
+    <div>
+      {posts.map((post) => (
+        <div className="m-2">
+          <h1 className="mb-3">{post.title}</h1>
+          <p> {post.content} </p>
+          <p> Posted By {post.posted_by} </p>
+          <p> Created At {new Date(post.created_at).toString()} </p>
+        </div>
+      ))}
+      Posts: {posts.length}
+    </div>
+  );
+}
+
 function App({ user, isAuthenticated, onLogin }) {
   console.log({ user, isAuthenticated });
   const location = useLocation();
@@ -132,13 +149,13 @@ function App({ user, isAuthenticated, onLogin }) {
   useEffect(() => {
     axios(requestConfiguration)
       .then(({ data }) => {
-        console.log(data);
-        if (data.userId) {
-          onLogin({ id: data.userId });
+        const { user_id } = data;
+        if (user_id) {
+          onLogin({ id: user_id });
           toast.current.show({
             sticky: true,
             severity: 'success',
-            summary: `Logged in as (User ${data.userId})`,
+            summary: `Logged in as (User ${user_id})`,
           });
         }
       })

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 import classNames from 'classnames';
 import { useForm } from 'react-hook-form';
@@ -19,13 +20,15 @@ const requestConfiguration = {
   withCredentials: true,
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
   return {
-    onLogin: (data) => dispatch(LOG_IN(data))
-  }
-}
+    onLogin: (data) => dispatch(LOG_IN(data)),
+  };
+};
 
 function RegisterForm({ toast, onLogin }) {
+  const history = useHistory();
+
   const [loading, setLoading] = useState(false);
 
   const { register, errors, handleSubmit, getValues } = useForm({
@@ -41,12 +44,22 @@ function RegisterForm({ toast, onLogin }) {
     })
       .then(({ data }) => {
         const { id, email } = data;
-        toast.current.show({sticky: true, severity: 'success', summary: "Registration Success!" })
-        onLogin({ id, email })
+        toast.current.show({
+          sticky: true,
+          severity: 'success',
+          summary: 'Registration Success!',
+        });
+        onLogin({ id, email });
+        history.push('/blog');
       })
       .catch((err) => {
-        const parsed = parseAxiosError(err).message
-        toast.current.show({sticky: true, severity: 'error', summary: "Registration Error", detail: parsed})
+        const parsed = parseAxiosError(err).message;
+        toast.current.show({
+          sticky: true,
+          severity: 'error',
+          summary: 'Registration Error',
+          detail: parsed,
+        });
       })
       .finally(() => setLoading(false));
   };
@@ -71,9 +84,9 @@ function RegisterForm({ toast, onLogin }) {
             className="form-input"
             placeholder="Johnbull@example.com"
           />
-          {errors?.email?.message ? (
+          {errors?.email?.message && (
             <Message severity="warn" text={errors.email.message} />
-          ) : null}
+          )}
         </div>
         <div className="px-4 pb-4">
           <label htmlFor="password" className="text-sm block font-bold pb-2">
@@ -89,9 +102,9 @@ function RegisterForm({ toast, onLogin }) {
             className="form-input"
             placeholder="Enter your password"
           />
-          {errors?.password?.types?.required ? (
+          {errors?.password?.types?.required && (
             <Message severity="warn" text={errors.password.types.required} />
-          ) : null}
+          )}
         </div>
         <div className="px-4 pb-4">
           <label htmlFor="password" className="text-sm block font-bold pb-2">
@@ -114,12 +127,12 @@ function RegisterForm({ toast, onLogin }) {
             className="form-input"
             placeholder="Confirm your password"
           />
-          {errors?.confirmPassword?.types?.required ? (
+          {errors?.confirmPassword?.types?.required && (
             <Message
               severity="warn"
               text={errors.confirmPassword.types.required}
             />
-          ) : null}
+          )}
           {errors?.confirmPassword?.types?.matchPW ? (
             <Message
               severity="warn"
@@ -139,4 +152,4 @@ function RegisterForm({ toast, onLogin }) {
   );
 }
 
-export default connect(null,mapDispatchToProps)(RegisterForm);
+export default connect(null, mapDispatchToProps)(RegisterForm);
