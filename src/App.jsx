@@ -28,9 +28,8 @@ const { rootURI } = config;
 const requestConfiguration = {
   url: `${rootURI}/users/checkSession`,
   method: 'GET',
-  withCredentials: true
+  withCredentials: true,
 };
-
 
 const mapDispatchToProps = (dispatch) => {
   return {
@@ -46,20 +45,21 @@ const mapStateToProps = (state) => {
 const routes = [
   { path: '/login', Component: LoginForm },
   { path: '/register', Component: RegisterForm },
+  { path: '/blog', Component: Blog },
   { path: '/', Component: SplashPlaceholder },
 ];
 
 const routeLayouts = {
   '/login': 'centered',
   '/register': 'centered',
-  '/': 'normal',
+  '/blog': 'normal',
+  '/': 'centered',
 };
 
-
 const tailwindLayouts = {
-  centered: 'flex justify-center items-center', 
-  normal: 'justify-center items-start'
-}
+  centered: 'flex justify-center items-center',
+  normal: 'justify-center items-start',
+};
 
 /*
   Animating Routes in React Router:
@@ -111,10 +111,16 @@ const tailwindLayouts = {
 const routeTransitionDelay = 1000;
 
 function SplashPlaceholder() {
-  return <div className="w-full max-w-md bg-gray-800">
-    <h1>Welcome to Posty!</h1>
-    <h4>Log In to Continue</h4>
-  </div>
+  return (
+    <div className="w-full p-2 max-w-md text-center">
+      <h1 className="font-serif p-2 text-xl">Welcome to Posty!</h1>
+      <h4 className="p-2">Log In to Continue</h4>
+    </div>
+  );
+}
+
+function Blog() {
+  return <div>Blog Component</div>;
 }
 function App({ user, isAuthenticated, onLogin }) {
   console.log({ user, isAuthenticated });
@@ -156,7 +162,7 @@ function App({ user, isAuthenticated, onLogin }) {
 
   return (
     <Page>
-      <Header />
+      <Header toast={toast} />
       <Toast ref={toast} position="bottom-right" />
       <div className="App h-full relative overflow-hidden">
         {routes.map(({ path, Component }) => {
@@ -178,7 +184,12 @@ function App({ user, isAuthenticated, onLogin }) {
                     }}
                     className="absolute inset-0"
                   >
-                    <div className={ classNames("w-full h-full flex", tailwindLayouts[layout])}>
+                    <div
+                      className={classNames(
+                        'w-full h-full flex',
+                        tailwindLayouts[layout]
+                      )}
+                    >
                       <Component toast={toast} />
                     </div>
                   </div>

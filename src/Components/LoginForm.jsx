@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 import classNames from 'classnames';
 import { useForm } from 'react-hook-form';
@@ -23,6 +24,9 @@ const requestConfiguration = {
 };
 
 function LoginForm({ toast, onLogin }) {
+  
+  const history = useHistory();
+
   const [loading, setLoading] = useState(false);
 
   const { register, errors, handleSubmit } = useForm();
@@ -41,6 +45,7 @@ function LoginForm({ toast, onLogin }) {
           summary: `Logged in as ${formData.email} (User ${id})`,
         });
         onLogin({ id });
+        history.push('/blog');
       })
       .catch((err) => {
         const parsed = parseAxiosError(err).message;
