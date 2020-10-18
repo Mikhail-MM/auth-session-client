@@ -19,6 +19,7 @@ const mapDispatchToProps = (dispatch) => {
 const requestConfiguration = {
   url: `${rootURI}/users/login`,
   method: 'POST',
+  withCredentials: true,
 };
 
 function LoginForm({ toast, onLogin }) {

@@ -16,6 +16,7 @@ const { rootURI } = config;
 const requestConfiguration = {
   url: `${rootURI}/users`,
   method: 'POST',
+  withCredentials: true,
 };
 
 const mapDispatchToProps = dispatch => {

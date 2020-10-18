@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 import { connect } from 'react-redux';
 import { Toast } from 'primereact/toast';
 import { CSSTransition } from 'react-transition-group';
@@ -14,6 +15,27 @@ import Header from './Components/Header';
 
 import LoginForm from './Components/LoginForm';
 import RegisterForm from './Components/RegisterForm';
+
+import { parseAxiosError } from './utils/network/parseAxiosError';
+
+import { LOG_IN } from './actions/authActions';
+
+import config from './config';
+
+const { rootURI } = config;
+
+const requestConfiguration = {
+  url: `${rootURI}/users/checkSession`,
+  method: 'GET',
+  withCredentials: true
+};
+
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onLogin: (data) => dispatch(LOG_IN(data)),
+  };
+};
 
 const mapStateToProps = (state) => {
   const { user, isAuthenticated } = state;
@@ -84,13 +106,37 @@ const tailwindContainerLayouts = {
 */
 
 const routeTransitionDelay = 1000;
-function App({ user, isAuthenticated }) {
+function App({ user, isAuthenticated, onLogin }) {
   console.log({ user, isAuthenticated });
   const location = useLocation();
   const [layout, setLayout] = useState(routeLayouts[location.pathname]);
-  
+
   const toast = useRef(null);
-  
+
+  useEffect(() => {
+    axios(requestConfiguration)
+      .then(({ data }) => {
+        console.log(data);
+        if (data.userId) {
+          onLogin({ id: data.userId });
+          toast.current.show({
+            sticky: true,
+            severity: 'success',
+            summary: `Logged in as (User ${data.userId})`,
+          });
+        }
+      })
+      .catch((err) => {
+        const parsed = parseAxiosError(err).message;
+        toast.current.show({
+          sticky: true,
+          severity: 'error',
+          summary: 'Authentication Error',
+          detail: parsed,
+        });
+      });
+  }, [onLogin]);
+
   useEffect(() => {
     setTimeout(() => {
       const layout = routeLayouts[location.pathname];
@@ -121,7 +167,7 @@ function App({ user, isAuthenticated }) {
                     }}
                     className="w-full max-w-md absolute"
                   >
-                    <Component toast={toast}/>
+                    <Component toast={toast} />
                   </div>
                 </CSSTransition>
               )}
@@ -133,4 +179,4 @@ function App({ user, isAuthenticated }) {
   );
 }
 
-export default connect(mapStateToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(App);
