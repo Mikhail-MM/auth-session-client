@@ -5,42 +5,31 @@ import { makeRequest } from '../utils/request';
 
 const source = axios.CancelToken.source();
 
-const useRequest = (configuration) => {
-
-  const [requestConfig, setRequestConfig] = useState(configuration);
-  const [requestState, setRequestState] = useState({
-    data: null,
-    loading: false,
-    error: false,
-  });
+const useRequest = (request) => {
+  const [requestConfiguration, setRequest] = useState(request);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [requestError, setRequestError] = useState(null);
 
   useEffect(() => {
-    setRequestState((prevState) => ({
-      ...prevState,
-      loading: true,
-    }));
+    let mounted = true;
+    if (mounted) setLoading(true);
+    makeRequest(requestConfiguration, source)
+      .then(data => {
+        if (mounted) setData(data);
+      }).catch(error=> {
+        if (mounted) setRequestError(error);
+      }).finally(() => {
+        if (mounted) setLoading(false);
+      })
 
-    makeRequest(requestConfig, source)
-      .then((data) =>
-        setRequestState((prevState) => ({
-          ...prevState,
-          data,
-          loading: false,
-        }))
-      )
-      .catch((error) =>
-        setRequestState((prevState) => ({
-          ...prevState,
-          loading: false,
-          error,
-        }))
-      );
+      return () => {
+        mounted = false;
+      };
 
-      return () => source.cancel("The Component Has Unmounted.");
+  }, [requestConfiguration]);
 
-  }, [requestConfig]);
-
-  return [requestState, setRequestConfig];
+  return [{ data, loading, requestError }, setRequest];
 };
 
 export { useRequest };

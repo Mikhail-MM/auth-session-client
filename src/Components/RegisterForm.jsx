@@ -1,14 +1,54 @@
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useState } from 'react';
+import { connect } from 'react-redux';
+import axios from 'axios';
+import classNames from 'classnames';
 
-function RegisterForm() {
+import { useForm } from 'react-hook-form';
+import { Message } from 'primereact/message';
+
+import { parseAxiosError } from '../utils/network/parseAxiosError';
+import config from '../config';
+
+import { LOG_IN } from '../actions/authActions';
+
+const { rootURI } = config;
+
+const requestConfiguration = {
+  url: `${rootURI}/users`,
+  method: 'POST',
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    onLogin: (data) => dispatch(LOG_IN(data))
+  }
+}
+
+function RegisterForm({ toast, onLogin }) {
+  const [loading, setLoading] = useState(false);
+
   const { register, errors, handleSubmit, getValues } = useForm({
-    //reValidateMode: "onSubmit",
-    criteriaMode: "all",
+    reValidateMode: 'onSubmit',
+    criteriaMode: 'all',
   });
 
-  const onSubmit = (data) => console.log(data);
-
+  const onSubmit = (formData) => {
+    setLoading(true);
+    axios({
+      ...requestConfiguration,
+      data: formData,
+    })
+      .then(({ data }) => {
+        const { id, email } = data;
+        toast.current.show({sticky: true, severity: 'success', summary: "Registration Success!" })
+        onLogin({ id, email })
+      })
+      .catch((err) => {
+        const parsed = parseAxiosError(err).message
+        toast.current.show({sticky: true, severity: 'error', summary: "Registration Error", detail: parsed})
+      })
+      .finally(() => setLoading(false));
+  };
 
   return (
     <div className="w-full max-w-md bg-gray-800">
@@ -22,15 +62,17 @@ function RegisterForm() {
           </label>
           <input
             ref={register({
-              required: { value: true, message: "Email Is Required!" },
+              required: { value: true, message: 'Email Is Required!' },
             })}
             type="email"
             name="email"
             id=""
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-blue-300 "
+            className="form-input"
             placeholder="Johnbull@example.com"
           />
-          {errors?.email?.message}
+          {errors?.email?.message ? (
+            <Message severity="warn" text={errors.email.message} />
+          ) : null}
         </div>
         <div className="px-4 pb-4">
           <label htmlFor="password" className="text-sm block font-bold pb-2">
@@ -38,15 +80,17 @@ function RegisterForm() {
           </label>
           <input
             ref={register({
-              required: { value: true, message: "Password Is Required!" },
+              required: { value: true, message: 'Password Is Required!' },
             })}
             type="password"
             name="password"
             id=""
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-blue-300"
+            className="form-input"
             placeholder="Enter your password"
           />
-          {errors?.password?.types?.required}
+          {errors?.password?.types?.required ? (
+            <Message severity="warn" text={errors.password.types.required} />
+          ) : null}
         </div>
         <div className="px-4 pb-4">
           <label htmlFor="password" className="text-sm block font-bold pb-2">
@@ -56,29 +100,42 @@ function RegisterForm() {
             ref={register({
               required: {
                 value: true,
-                message: "Confirmed Password Is Required!",
+                message: 'Confirmed Password Is Required!',
               },
               validate: {
                 matchPW: (value) =>
-                  value === getValues().password || "Password must match!",
+                  value === getValues().password || 'Password must match!',
               },
             })}
             type="password"
             name="confirmPassword"
             id=""
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-blue-300"
+            className="form-input"
             placeholder="Confirm your password"
           />
-
-          {errors?.password?.types?.required}
-          {errors?.password?.types?.matchPW}
+          {errors?.confirmPassword?.types?.required ? (
+            <Message
+              severity="warn"
+              text={errors.confirmPassword.types.required}
+            />
+          ) : null}
+          {errors?.confirmPassword?.types?.matchPW ? (
+            <Message
+              severity="warn"
+              text={errors.confirmPassword.types.matchPW}
+            />
+          ) : null}
         </div>
         <div>
-          <input type="submit" className="btn" value="Register" />
+          <input
+            type="submit"
+            className={classNames('btn', { 'btn-loading': loading })}
+            value={loading ? 'Loading...' : 'Register'}
+          />
         </div>
       </form>
     </div>
   );
 }
 
-export default RegisterForm;
+export default connect(null,mapDispatchToProps)(RegisterForm);

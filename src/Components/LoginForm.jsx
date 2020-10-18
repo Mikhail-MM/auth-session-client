@@ -1,6 +1,5 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-// import { useRequest } from '../hooks/useRequest';
 import { connect } from 'react-redux';
 
 import { LOG_IN } from '../actions/authActions';
@@ -13,14 +12,12 @@ const mapDispatchToProps = dispatch => {
 
 function LoginForm(props) {
   const { toast } = props;
-  // console.log(toast);
   const { register, errors, handleSubmit } = useForm();
   
-  // const requestState = useRequest(requestConfig);
   const onSubmit = (data) => {
-    console.log("Form Click");
-    toast.current.show({severity:'success', summary: 'Success Message', detail:'Message Content', sticky: true});
+    
   }
+
   return (
     <div className="w-full max-w-md bg-gray-800">
       <form
@@ -38,7 +35,7 @@ function LoginForm(props) {
             type="email"
             name="email"
             id=""
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-blue-300 "
+            className="form-input"
             placeholder="Johnbull@example.com"
           />
           {errors?.email?.message}
@@ -54,7 +51,7 @@ function LoginForm(props) {
             type="password"
             name="password"
             id=""
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-blue-300"
+            className="form-input"
             placeholder="Enter your password"
           />
           {errors?.password?.message}

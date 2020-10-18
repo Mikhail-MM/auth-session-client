@@ -27,7 +27,7 @@ const routes = [
 
 const routeLayouts = {
   '/login': 'centered',
-  '/register': 'normal',
+  '/register': 'centered',
   '/': 'normal',
 };
 
@@ -84,11 +84,12 @@ const tailwindContainerLayouts = {
 */
 
 const routeTransitionDelay = 1000;
-function App() {
-  const [layout, setLayout] = useState('centered');
-  const toast = useRef(null);
-
+function App({ user, isAuthenticated }) {
+  console.log({ user, isAuthenticated });
   const location = useLocation();
+  const [layout, setLayout] = useState(routeLayouts[location.pathname]);
+  
+  const toast = useRef(null);
   
   useEffect(() => {
     setTimeout(() => {
@@ -100,7 +101,7 @@ function App() {
   return (
     <Page>
       <Header />
-      <Toast ref={toast} />
+      <Toast ref={toast} position="bottom-right" />
       <div className={tailwindContainerLayouts[layout]}>
         {routes.map(({ path, Component }) => {
           return (
@@ -120,7 +121,7 @@ function App() {
                     }}
                     className="w-full max-w-md absolute"
                   >
-                    <Component />
+                    <Component toast={toast}/>
                   </div>
                 </CSSTransition>
               )}
