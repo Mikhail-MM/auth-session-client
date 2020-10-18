@@ -1,22 +1,57 @@
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useState } from 'react';
+import axios from 'axios';
+import classNames from 'classnames';
+import { useForm } from 'react-hook-form';
 import { connect } from 'react-redux';
 
+import { parseAxiosError } from '../utils/network/parseAxiosError';
 import { LOG_IN } from '../actions/authActions';
 
-const mapDispatchToProps = dispatch => {
-  return {
-    onLogin: (data) => dispatch(LOG_IN(data))
-  }
-}
+import config from '../config';
+const { rootURI } = config;
 
-function LoginForm(props) {
-  const { toast } = props;
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onLogin: (data) => dispatch(LOG_IN(data)),
+  };
+};
+
+const requestConfiguration = {
+  url: `${rootURI}/users/login`,
+  method: 'POST',
+};
+
+function LoginForm({ toast, onLogin }) {
+  const [loading, setLoading] = useState(false);
+
   const { register, errors, handleSubmit } = useForm();
-  
-  const onSubmit = (data) => {
-    
-  }
+
+  const onSubmit = (formData) => {
+    setLoading(true);
+    axios({
+      ...requestConfiguration,
+      data: formData,
+    })
+      .then(({ data }) => {
+        const { id } = data;
+        toast.current.show({
+          sticky: true,
+          severity: 'success',
+          summary: `Logged in as ${formData.email} (User ${id})`,
+        });
+        onLogin({ id });
+      })
+      .catch((err) => {
+        const parsed = parseAxiosError(err).message;
+        toast.current.show({
+          sticky: true,
+          severity: 'error',
+          summary: 'Authentication Error',
+          detail: parsed,
+        });
+      })
+      .finally(() => setLoading(false));
+  };
 
   return (
     <div className="w-full max-w-md bg-gray-800">
@@ -30,7 +65,7 @@ function LoginForm(props) {
           </label>
           <input
             ref={register({
-              required: { value: true, message: "Email Is Required!" },
+              required: { value: true, message: 'Email Is Required!' },
             })}
             type="email"
             name="email"
@@ -46,7 +81,7 @@ function LoginForm(props) {
           </label>
           <input
             ref={register({
-              required: { value: true, message: "Password Is Required!" },
+              required: { value: true, message: 'Password Is Required!' },
             })}
             type="password"
             name="password"
@@ -57,11 +92,15 @@ function LoginForm(props) {
           {errors?.password?.message}
         </div>
         <div>
-          <input type="submit" className="btn" value="Sign In" />
+          <input
+            type="submit"
+            className={classNames('btn', { 'btn-loading': loading })}
+            value={loading ? 'Loading...' : 'Sign In'}
+          />
         </div>
       </form>
     </div>
   );
 }
 
-export default connect(null, mapDispatchToProps)(LoginForm)
+export default connect(null, mapDispatchToProps)(LoginForm);

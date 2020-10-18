@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import axios from 'axios';
 import classNames from 'classnames';
-
 import { useForm } from 'react-hook-form';
+
 import { Message } from 'primereact/message';
 
 import { parseAxiosError } from '../utils/network/parseAxiosError';
-import config from '../config';
 
 import { LOG_IN } from '../actions/authActions';
 
+import config from '../config';
 const { rootURI } = config;
 
 const requestConfiguration = {
