@@ -15,18 +15,19 @@ const useRequest = (request) => {
     let mounted = true;
     if (mounted) setLoading(true);
     makeRequest(requestConfiguration, source)
-      .then(data => {
+      .then((data) => {
         if (mounted) setData(data);
-      }).catch(error=> {
-        if (mounted) setRequestError(error);
-      }).finally(() => {
-        if (mounted) setLoading(false);
       })
+      .catch((error) => {
+        if (mounted) setRequestError(error);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
 
-      return () => {
-        mounted = false;
-      };
-
+    return () => {
+      mounted = false;
+    };
   }, [requestConfiguration]);
 
   return [{ data, loading, requestError }, setRequest];

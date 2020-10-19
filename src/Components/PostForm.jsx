@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-
 import classNames from 'classnames';
-
-import { Message } from 'primereact/message';
-
 import { connect } from 'react-redux';
 import { useForm } from 'react-hook-form';
+
+import { Message } from 'primereact/message';
 
 import { parseAxiosError } from '../utils/network/parseAxiosError';
 

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 import classNames from 'classnames';
+import { useHistory } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { connect } from 'react-redux';
 
 import { Message } from 'primereact/message';
 
 import { parseAxiosError } from '../utils/network/parseAxiosError';
+
 import { LOG_IN } from '../actions/authActions';
 
 import config from '../config';
@@ -34,7 +35,7 @@ function LoginForm({ toast, onLogin }) {
     reValidateMode: 'onSubmit',
     criteriaMode: 'all',
   });
-  console.log(errors);
+
   const onSubmit = (formData) => {
     setLoading(true);
     axios({

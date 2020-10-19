@@ -22,14 +22,13 @@ const useRequestCallback = (request) => {
       .finally(() => {
         setLoading(false);
       });
-
   }, [request]);
 
   useEffect(() => {
     return () => source.cancel('The Component Has Unmounted.');
   }, []);
 
-  return [{ data, loading, requestError }, sendRequest]
+  return [{ data, loading, requestError }, sendRequest];
 };
 
-export { useRequestCallback }
+export { useRequestCallback };

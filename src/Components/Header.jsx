@@ -1,9 +1,10 @@
 import React from 'react';
 import axios from 'axios';
-import { connect } from 'react-redux';
-import AuthReader from './AuthReader';
 
+import { connect } from 'react-redux';
 import { Link, useHistory } from 'react-router-dom';
+
+import AuthReader from './AuthReader';
 
 import { parseAxiosError } from '../utils/network/parseAxiosError';
 

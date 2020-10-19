@@ -1,8 +1,7 @@
-const parseAxiosError = err => {
+const parseAxiosError = (err) => {
   console.log(err);
   if (err.isAxiosError) {
     if (err.response) {
-      console.log('has response')
       const { data, status } = err.response;
       console.log(data, status);
       if (typeof data === 'string') {
@@ -13,8 +12,7 @@ const parseAxiosError = err => {
     } else {
       return new Error(`[Network Code ${err.statusCode}] ${err.message}`);
     }
-  }
-  else return err;
-}
+  } else return err;
+};
 
-export { parseAxiosError }
+export { parseAxiosError };

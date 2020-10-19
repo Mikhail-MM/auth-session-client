@@ -1,38 +1,32 @@
 import React, { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
-import { connect } from 'react-redux';
 import classNames from 'classnames';
-import { Toast } from 'primereact/toast';
-import { CSSTransition } from 'react-transition-group';
+
+import { connect } from 'react-redux';
 import { Route, useLocation } from 'react-router-dom';
 
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
+import { Toast } from 'primereact/toast';
+import { CSSTransition } from 'react-transition-group';
+
 import Page from './Components/Layout/Page';
-
 import Header from './Components/Header';
-
 import LoginForm from './Components/LoginForm';
 import RegisterForm from './Components/RegisterForm';
-import PostForm from './Components/PostForm';
+import Blog from './Components/Blog';
+
 import { parseAxiosError } from './utils/network/parseAxiosError';
 
 import { LOG_IN } from './actions/authActions';
 
 import config from './config';
-
 const { rootURI } = config;
 
 const requestConfiguration = {
   url: `${rootURI}/users/checkSession`,
-  method: 'GET',
-  withCredentials: true,
-};
-
-const postsRequestconfiguration = {
-  url: `${rootURI}/posts`,
   method: 'GET',
   withCredentials: true,
 };
@@ -78,69 +72,7 @@ function SplashPlaceholder() {
   );
 }
 
-function Blog({ toast }) {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let mounted = true;
-    if (mounted) setLoading(true);
-    axios(postsRequestconfiguration)
-      .then(({ data }) => {
-        if (mounted) setPosts(data);
-      })
-      .catch((err) => {
-        const parsed = parseAxiosError(err).message;
-        if (mounted) setError(parsed);
-      })
-      .finally(() => setLoading(false));
-    return () => (mounted = false);
-  }, []);
-
-  useEffect(() => {
-    if (error) {
-      toast.current.show({
-        sticky: true,
-        severity: 'error',
-        summary: 'Houson, we have a problem...',
-        detail: error,
-      });
-    }
-  }, [toast, error]);
-
-  return (
-    <div>
-      <h1> Posts </h1>
-      <PostForm toast={toast} />
-      <Feed
-        loading={loading}
-        setLoading={setLoading}
-        posts={posts}
-        toast={toast}
-      />
-    </div>
-  );
-}
-
-function Feed({ posts }) {
-  return (
-    <div>
-      {posts.map((post) => (
-        <div className="m-2">
-          <h1 className="mb-3">{post.title}</h1>
-          <p> {post.content} </p>
-          <p> Posted By {post.posted_by} </p>
-          <p> Created At {new Date(post.created_at).toString()} </p>
-        </div>
-      ))}
-      Posts: {posts.length}
-    </div>
-  );
-}
-
 function App({ user, isAuthenticated, onLogin }) {
-  console.log({ user, isAuthenticated });
   const location = useLocation();
   const [layout, setLayout] = useState(routeLayouts[location.pathname]);
 

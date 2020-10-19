@@ -16,7 +16,6 @@ async function makeRequest(
 }
 
 function parseRequestConfig(requestConfig, source) {
-  console.log(requestConfig);
   if (typeof requestConfig === 'string') {
     return {
       url: requestConfig,
