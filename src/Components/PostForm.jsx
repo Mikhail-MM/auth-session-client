@@ -38,7 +38,6 @@ function PostForm({ toast }) {
       data,
     })
       .then(({ data }) => {
-        console.log("New Post Data", data);
         toast.current.show({
           sticky: true,
           severity: 'success',
