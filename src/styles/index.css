@@ -30,6 +30,14 @@
     @apply bg-blue-700 outline-none shadow-outline;
   }
 
+  .btn-toggled {
+    @apply bg-green-500;
+  }
+
+  .btn-toggled:hover {
+    @apply bg-green-700;
+  }
+
   .btn:focus {
     @apply outline-none shadow-outline;
   }

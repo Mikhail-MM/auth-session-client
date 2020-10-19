@@ -15,17 +15,17 @@ const newPostRequestConfiguration = {
   url: `${rootURI}/posts`,
   method: 'POST',
   withCredentials: true,
-}
+};
 
 const mapStateToProps = ({ isAuthenticated, user }) => ({
   isAuthenticated,
   user,
 });
 
-function PostForm({ toast }) {
-
+function PostForm({ toast, tags }) {
+  const [formTags, setFormTags] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
   const { register, errors, handleSubmit } = useForm({
     reValidateMode: 'onSubmit',
     criteriaMode: 'all',
@@ -54,6 +54,20 @@ function PostForm({ toast }) {
         });
       })
       .finally(() => setLoading(false));
+  };
+
+  const onAddTagsButtonClick = (e) => {
+    e.preventDefault();
+    const id = Number(e.target.dataset.id);
+    if (isNaN(id)) {
+      return toast.current.show({
+        sticky: true,
+        severity: 'error',
+        summary: 'Tag has Unparseable ID',
+        detail: 'Check Tag ID Type - Does not convert to Number',
+      });
+    }
+    setFormTags(formTags.concat([id]));
   };
 
   return (
@@ -94,6 +108,25 @@ function PostForm({ toast }) {
         {errors?.content?.message && (
           <Message severity="warn" text={errors.title.message} />
         )}
+      </div>
+      <div>
+        {tags.map(({ title, id }) => {
+          const isSelected = formTags.includes(Number(id));
+          return (
+            <button
+              className={classNames('btn mx-2', {
+                'btn-toggled': isSelected,
+              })}
+              data-id={id}
+              onClick={onAddTagsButtonClick}
+            >
+              {title}
+            </button>
+          );
+        })}
+        <button className="btn" onClick={onAddTagsButtonClick}>
+          Add Tags
+        </button>
       </div>
       <div>
         <input
