@@ -135,7 +135,7 @@ function App({ user, isAuthenticated, onLogin }) {
                   >
                     <div
                       className={classNames(
-                        'w-full h-full flex',
+                        'w-full h-full flex overflow-auto',
                         tailwindLayouts[layout]
                       )}
                     >
