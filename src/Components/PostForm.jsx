@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import classNames from 'classnames';
 import { connect } from 'react-redux';
@@ -22,27 +22,31 @@ const mapStateToProps = ({ isAuthenticated, user }) => ({
   user,
 });
 
-function PostForm({ toast, tags }) {
+
+function PostForm({ toast, tags, posts, setPosts }) {
   const [formTags, setFormTags] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const { register, errors, handleSubmit } = useForm({
+  const { register, errors, handleSubmit, reset } = useForm({
     reValidateMode: 'onSubmit',
     criteriaMode: 'all',
   });
 
-  const onSubmit = (data) => {
+
+  const onSubmit = (formData) => {
     setLoading(true);
     axios({
       ...newPostRequestConfiguration,
-      data,
+      data: { ...formData, tags: formTags },
     })
-      .then(({ data }) => {
+      .then(({ data: newPost }) => {
         toast.current.show({
           sticky: true,
           severity: 'success',
           summary: `Post Submitted Successfully!`,
         });
+        setPosts([newPost].concat(posts));
+        setFormTags([]);
+        reset();
       })
       .catch((err) => {
         const parsed = parseAxiosError(err).message;
@@ -124,15 +128,12 @@ function PostForm({ toast, tags }) {
             </button>
           );
         })}
-        <button className="btn" onClick={onAddTagsButtonClick}>
-          Add Tags
-        </button>
       </div>
       <div>
         <input
           type="submit"
           className={classNames('btn', { 'btn-loading': loading })}
-          value={loading ? 'Loading...' : 'Sign In'}
+          value={loading ? 'Loading...' : 'Post'}
         />
       </div>
     </form>

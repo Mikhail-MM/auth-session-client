@@ -74,7 +74,7 @@ function Blog({ toast }) {
   return (
     <div>
       <h1> Posts </h1>
-      <PostForm toast={toast} tags={tags} />
+      <PostForm toast={toast} tags={tags} posts={posts} setPosts={setPosts} />
       <BlogFeed
         loading={loading}
         setLoading={setLoading}
