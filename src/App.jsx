@@ -17,13 +17,14 @@ import Header from './Components/Header';
 import LoginForm from './Components/LoginForm';
 import RegisterForm from './Components/RegisterForm';
 import Blog from './Components/Blog';
+import Chat from './Components/Chat';
 
 import { parseAxiosError } from './utils/network/parseAxiosError';
 
 import { LOG_IN } from './actions/authActions';
 
 import config from './config';
-const { rootURI } = config;
+const { rootURI, webSocketURI } = config;
 
 const requestConfiguration = {
   url: `${rootURI}/users/checkSession`,
@@ -37,15 +38,11 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-const mapStateToProps = (state) => {
-  const { user, isAuthenticated } = state;
-  return { user, isAuthenticated };
-};
-
 const routes = [
   { path: '/login', Component: LoginForm },
   { path: '/register', Component: RegisterForm },
   { path: '/blog', Component: Blog },
+  { path: '/chat', Component: Chat },
   { path: '/', Component: SplashPlaceholder },
 ];
 
@@ -72,7 +69,31 @@ function SplashPlaceholder() {
   );
 }
 
-function App({ user, isAuthenticated, onLogin }) {
+const socket = new WebSocket(webSocketURI);
+
+socket.onopen = (event) => {
+  console.log("Socket OnOpen Handled");
+  socket.send(JSON.stringify({ message: "Testing Socket Opener", recipient: "Test Data"}));
+}
+
+socket.onmessage = (event) => {
+  console.log("Socket Message")
+  console.log(event);
+}
+
+socket.onerror = (event) => {
+  console.log("Got Error");
+  console.log(event);
+  console.log(event.error);
+}
+
+socket.onclose = (event) => {
+  console.log("Socket Closed");
+  console.log(event.code); // will always be 1006
+  console.log(event.reason);
+}
+
+function App({ onLogin }) {
   const location = useLocation();
   const [layout, setLayout] = useState(routeLayouts[location.pathname]);
 
@@ -152,4 +173,4 @@ function App({ user, isAuthenticated, onLogin }) {
   );
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(null, mapDispatchToProps)(App);

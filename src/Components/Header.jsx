@@ -83,6 +83,11 @@ function Header({ toast, isAuthenticated, onLogout }) {
               Blog
             </Link>
           </li>
+          <li>
+            <Link className="text-indigo-500 px-2" to="/chat">
+              Chat
+            </Link>
+          </li>
           {isAuthenticated && (
             <li>
               <a
