@@ -43,13 +43,13 @@ function RegisterForm({ toast, onLogin }) {
       data: formData,
     })
       .then(({ data }) => {
-        const { id, email } = data;
+        const { user_id, email } = data;
         toast.current.show({
           sticky: true,
           severity: 'success',
           summary: 'Registration Success!',
         });
-        onLogin({ id, email });
+        onLogin({ user_id, email });
         history.push('/blog');
       })
       .catch((err) => {

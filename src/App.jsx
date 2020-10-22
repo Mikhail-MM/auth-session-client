@@ -69,30 +69,6 @@ function SplashPlaceholder() {
   );
 }
 
-const socket = new WebSocket(webSocketURI);
-
-socket.onopen = (event) => {
-  console.log("Socket OnOpen Handled");
-  socket.send(JSON.stringify({ message: "Testing Socket Opener", recipient: "Test Data"}));
-}
-
-socket.onmessage = (event) => {
-  console.log("Socket Message")
-  console.log(event);
-}
-
-socket.onerror = (event) => {
-  console.log("Got Error");
-  console.log(event);
-  console.log(event.error);
-}
-
-socket.onclose = (event) => {
-  console.log("Socket Closed");
-  console.log(event.code); // will always be 1006
-  console.log(event.reason);
-}
-
 function App({ onLogin }) {
   const location = useLocation();
   const [layout, setLayout] = useState(routeLayouts[location.pathname]);
@@ -102,9 +78,9 @@ function App({ onLogin }) {
   useEffect(() => {
     axios(requestConfiguration)
       .then(({ data }) => {
-        const { user_id } = data;
+        const { user_id, email } = data;
         if (user_id) {
-          onLogin({ id: user_id });
+          onLogin({ user_id, email });
           toast.current.show({
             sticky: true,
             severity: 'success',

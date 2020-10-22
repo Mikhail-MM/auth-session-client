@@ -295,6 +295,16 @@ module.exports = {
     },
     inset: {
       "0": "0",
+      "1": "0.25rem",
+      "2": "0.5rem",
+      "3": "0.75rem",
+      "4": "1rem",
+      "5": "1.5rem",
+      "6": "2rem",
+      "7": "2.5rem",
+      "8": "3rem",
+      "9": "4rem",
+      "10": "5rem",
       auto: "auto"
     },
     letterSpacing: {
@@ -337,6 +347,7 @@ module.exports = {
     },
     minWidth: {
       "0": "0",
+      "64": "16rem",
       full: "100%"
     },
     objectPosition: {

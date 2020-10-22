@@ -118,6 +118,7 @@ function PostForm({ toast, tags, posts, setPosts }) {
           const isSelected = formTags.includes(Number(id));
           return (
             <button
+              key={id}
               className={classNames('btn mx-2', {
                 'btn-toggled': isSelected,
               })}

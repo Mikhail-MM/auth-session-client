@@ -43,13 +43,13 @@ function LoginForm({ toast, onLogin }) {
       data: formData,
     })
       .then(({ data }) => {
-        const { user_id } = data;
+        const { user_id, email } = data;
         toast.current.show({
           sticky: true,
           severity: 'success',
           summary: `Logged in as ${formData.email} (User ${user_id})`,
         });
-        onLogin({ user_id });
+        onLogin({ user_id, email });
         history.push('/blog');
       })
       .catch((err) => {
