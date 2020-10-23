@@ -29,6 +29,8 @@ const getUsersByRoomRequestConfiguration = (id) => ({
   withCredentials: true,
 });
 
+const maxRetries = 10;
+
 function Chat({ user, isAuthenticated, toast }) {
   const webSocketInstance = useRef(null);
 
@@ -46,7 +48,9 @@ function Chat({ user, isAuthenticated, toast }) {
   const [newMessage, setNewMessage] = useState("");
 
   const [socketConnected, setSocketConnected] = useState(false);
-  const [reconnectionRetries, setReconnectionRetries] = useState(0);
+  const [renderKey, setRenderKey] = useState(0);
+
+  const retryAttempts = useRef(0);
 
   const onViewChange = (e) => {
     const { viewkey } = e.target.dataset;
@@ -76,11 +80,10 @@ function Chat({ user, isAuthenticated, toast }) {
   const onMessageBoxChange = (e) => {
     setNewMessage(e.target.value);
   }
-  
+
   useEffect(() => {
     if (!socketConnected) {
-      if (isAuthenticated) {
-
+      if (isAuthenticated && (!webSocketInstance.current || !webSocketInstance.current.connected)) {
         webSocketInstance.current = new WebSocket(webSocketURI);
 
         webSocketInstance.current.onopen = (event) => {
@@ -89,6 +92,8 @@ function Chat({ user, isAuthenticated, toast }) {
             severity: 'success',
             summary: 'WebSocket Connection Established',
           });
+
+          webSocketInstance.current.connected = true;
           setSocketConnected(true);
         }
 
@@ -114,22 +119,28 @@ function Chat({ user, isAuthenticated, toast }) {
             }
             case 'messages/createMessage': {
               const { created_by, created_at }  = parsed;
-              return setMessages(
-                messages.concat([{
+              return setMessages((messages) => {
+                return messages.concat([{
                   message,
                   created_by,
-                  created_at
-                }]
-              ));
+                  created_at,
+                }])
+              })
             }
             default: {
 
             }
           }
-          console.log(parsed);
         }
 
         webSocketInstance.current.onerror = (event) => {
+          toast.current.show({
+            sticky: true,
+            severity: 'error',
+            summary: 'Server Returned Websocket Error',
+            detail: "WebSocket onError",
+          });
+          webSocketInstance.current.connected = false;
           setSocketConnected(false);
         }
 
@@ -139,20 +150,35 @@ function Chat({ user, isAuthenticated, toast }) {
             severity: 'info',
             summary: 'WebSocket Connection Lost - Attemption Reconnection.',
           });
+          webSocketInstance.current.connected = false;
           setSocketConnected(false);
         }
       }
     }
+  }, [isAuthenticated, toast, socketConnected, renderKey]);
 
-    return () => {
-      if (socketConnected) {
-        if (webSocketInstance.current) {
-          webSocketInstance.current.close();
-          setSocketConnected(false);
+  useEffect(() => {
+    // Always use the most up-to-date instance ref property.
+    if (webSocketInstance.current && !webSocketInstance.current.connected) {
+      const interval = setInterval(() => {
+        if (retryAttempts.current < maxRetries) {
+          console.log("Forcing a re-render.")
+          // Force a re-render to cause the first webSocket responsible effect to re-run.
+          retryAttempts.current += 1;
+          setRenderKey((key) => key + 1);
         }
+      }, 5000)
+      return () => clearInterval(interval);
+    }
+  }, [socketConnected]);
+
+  useEffect(() => {
+    return () => {
+      if (webSocketInstance.current) {
+        webSocketInstance.current.close();
       }
     }
-  }, [isAuthenticated, toast, socketConnected, messages]);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && !chatrooms.length) {
