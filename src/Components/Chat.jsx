@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
 
@@ -125,6 +125,10 @@ function Chat({ user, isAuthenticated, toast }) {
   }, []);
 
   */
+
+
+
+  /*
   useEffect(() => {
     if (isAuthenticated && !chatrooms.length) {
       setLoadingRooms(true)
@@ -141,6 +145,82 @@ function Chat({ user, isAuthenticated, toast }) {
       }).finally(() => setLoadingRooms(false));
     }
   }, [isAuthenticated, toast, chatrooms]);
+
+  */
+
+/* ATTEMPT 1 * 
+ const maxFetchRetries = 5;
+
+ useEffect(() => {
+    let retries = 0;
+    const fetchRooms = async () => {
+      console.log(`Fetching Data Attempt ${retries}`);
+      axios(roomRequestConfiguration).then(({ data }) => {
+        setChatRooms(data);
+      }).catch(err => {
+        console.log("Error Fetching");
+        if (retries < maxFetchRetries) {
+          setTimeout(() => {
+            retries+=1;
+            fetchRooms();
+          }, 500)
+        }
+      })
+    }
+   if (isAuthenticated && !chatrooms.length) {
+      fetchRooms();
+   }
+ }, [isAuthenticated, chatrooms]);
+
+*/ 
+
+  const maxTries = 20;
+
+  const retryGetRooms = useCallback( async (status) => {
+    let tries = 0;
+    const getRooms = async () => {
+      try {
+        const { data } = await axios(roomRequestConfiguration);
+        return data;
+      } catch(err) {
+        return new Promise((resolve, reject) => {
+          if (tries < maxTries && !status.cancelled) {
+            status.hasTimeout = true;
+            status.cancelToken = setTimeout(() => {
+              tries += 1;
+              resolve(getRooms());
+            }, 5000)
+          } else {
+            reject(err);
+          }
+        })
+      }
+    }
+
+    return getRooms();
+
+  }, []);
+
+  useEffect(() => {
+    const status = {
+      cancelled: false,
+      hasTimeout: false,
+      cancelToken: null
+    }
+    if (isAuthenticated && !chatrooms.length) {
+      retryGetRooms(status).then(data => {
+        if (!status.cancelled) setChatRooms(data);
+      }).catch(err => {
+        console.log("There was an error with fetching rooms, even after retrying. Try again?");
+      });
+    }
+    return () => {
+      status.cancelled = true;
+      if (status.hasTimeout) {
+        clearTimeout(status.cancelToken)
+      }
+    };
+  }, [isAuthenticated, chatrooms, retryGetRooms]);
 
   useEffect(() => {
     if (activeRoom) {
