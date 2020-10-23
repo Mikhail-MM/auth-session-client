@@ -45,6 +45,9 @@ function Chat({ user, isAuthenticated, toast }) {
 
   const [newMessage, setNewMessage] = useState("");
 
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [reconnectionRetries, setReconnectionRetries] = useState(0);
+
   const onViewChange = (e) => {
     const { viewkey } = e.target.dataset;
     setActiveView(viewkey);
@@ -56,13 +59,18 @@ function Chat({ user, isAuthenticated, toast }) {
   }
 
   const onNewMessageSubmit = (e) => {
+    const { user_id, email } = user;
     e.preventDefault();
     webSocketInstance.current.send(
       JSON.stringify({
         message: newMessage,
-        
+        chatroom_id: activeRoom,
+        type: 'messages/createMessage',
+        user_id, 
+        email
       })
-    )
+    );
+    setNewMessage("");
   }
 
   const onMessageBoxChange = (e) => {
@@ -70,36 +78,81 @@ function Chat({ user, isAuthenticated, toast }) {
   }
   
   useEffect(() => {
-    if (isAuthenticated && !webSocketInstance.current) {
-      webSocketInstance.current = new WebSocket(webSocketURI);
-      webSocketInstance.current.onopen = (event) => {
-        console.log("Socket OnOpen Handled");
-        webSocketInstance.current.send(JSON.stringify({ message: "Testing Socket Opener", recipient: "Test Data"}));
-      }
+    if (!socketConnected) {
+      if (isAuthenticated) {
 
-      webSocketInstance.current.onmessage = (event) => {
-        console.log("Socket Message")
-        console.log(event);
-      }
+        webSocketInstance.current = new WebSocket(webSocketURI);
 
-      webSocketInstance.current.onerror = (event) => {
-        console.log("Got Error");
-        console.log(event);
-        console.log(event.error);
-      }
+        webSocketInstance.current.onopen = (event) => {
+          toast.current.show({
+            sticky: true,
+            severity: 'success',
+            summary: 'WebSocket Connection Established',
+          });
+          setSocketConnected(true);
+        }
 
-      webSocketInstance.current.onclose = (event) => {
-        console.log("Socket Closed");
-        console.log(event.code); // will always be 1006
-        console.log(event.reason);
+        webSocketInstance.current.onmessage = (event) => {
+          console.log("Message Event Recieved", event)
+          const parsed = JSON.parse(event.data);
+          const { type, message } = parsed;
+          switch(type) {
+            case 'error': {
+              return toast.current.show({
+                sticky: true,
+                severity: 'error',
+                summary: 'Server Returned Websocket Error',
+                detail: message,
+              });
+            }
+            case 'notification': {
+              return toast.current.show({
+                sticky: true,
+                severity: 'info',
+                summary: message,
+              });
+            }
+            case 'messages/createMessage': {
+              const { created_by, created_at }  = parsed;
+              return setMessages(
+                messages.concat([{
+                  message,
+                  created_by,
+                  created_at
+                }]
+              ));
+            }
+            default: {
+
+            }
+          }
+          console.log(parsed);
+        }
+
+        webSocketInstance.current.onerror = (event) => {
+          setSocketConnected(false);
+        }
+
+        webSocketInstance.current.onclose = (event) => {
+          toast.current.show({
+            sticky: true,
+            severity: 'info',
+            summary: 'WebSocket Connection Lost - Attemption Reconnection.',
+          });
+          setSocketConnected(false);
+        }
       }
     }
+
     return () => {
-      if (webSocketInstance.current) {
-        webSocketInstance.current.close();
+      if (socketConnected) {
+        if (webSocketInstance.current) {
+          webSocketInstance.current.close();
+          setSocketConnected(false);
+        }
       }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, toast, socketConnected, messages]);
 
   useEffect(() => {
     if (isAuthenticated && !chatrooms.length) {
@@ -187,7 +240,7 @@ function Chat({ user, isAuthenticated, toast }) {
       <div className="flex flex-col border flex-grow border-gray-600">
         <div className="messagebox flex-grow w-full flex flex-col">
           {
-            messages.map(({ id, created_at, message, created_by }) => <div data-id={id}>
+            messages.map(({ id, created_at, message, created_by }) => <div key={id} data-id={id}>
                 <div class="flex flex-wrap w-full"> 
                   <strong>{created_by} ({created_at}):</strong>
                   <span>{message}</span>
@@ -199,7 +252,7 @@ function Chat({ user, isAuthenticated, toast }) {
         <div className="forminput w-full h-10 border border-gray-600">
           <form onSubmit={onNewMessageSubmit} className="h-full w-full flex">
             <input onChange={onMessageBoxChange} className="h-full border border-gray-600 flex-grow" type="text" value={newMessage}/>
-            <input className="h-full border border-gray-600 w-48" type="submit" value="Send Message" />
+            <input disabled={!activeRoom} className="h-full border border-gray-600 w-48" type="submit" value="Send Message" />
           </form>
         </div>
       </div>
