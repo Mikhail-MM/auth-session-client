@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
+
 import { parseAxiosError } from '../utils/network/parseAxiosError';
+import { initializeConnection } from '../utils/websocket/socket';
 
 import config from '../config';
 const  { rootURI, webSocketURI } = config;
@@ -81,89 +83,25 @@ function Chat({ user, isAuthenticated, toast }) {
   }
 
   useEffect(() => {
-    console.log("Run the trap.", socketConnected, !webSocketInstance.current, !webSocketInstance?.current?.connected);
-    console.log((!socketConnected) && (isAuthenticated && (!webSocketInstance.current || !webSocketInstance.current.connected)))
-    if (!socketConnected) {
-      if (isAuthenticated && (!webSocketInstance.current || !webSocketInstance.current.connected)) {
-        console.log("A new websocket was initialized")
-        webSocketInstance.current = new WebSocket(webSocketURI);
+    if (webSocketInstance.current) {
+      console.log(webSocketInstance.current.readystate)
+    }
+    if (isAuthenticated && (!webSocketInstance.current || webSocketInstance.current.readyState === 3)) {
+      webSocketInstance.current = initializeConnection({ toast, setMessages, retries, setRetries });
+    }
+  }, [isAuthenticated, toast, retries]);
 
-        webSocketInstance.current.onopen = (event) => {
-          toast.current.show({
-            sticky: true,
-            severity: 'success',
-            summary: 'WebSocket Connection Established',
-          });
-          console.log("It Opened")
-          webSocketInstance.current.connected = true;
-          setSocketConnected(true);
-        }
-
-        webSocketInstance.current.onmessage = (event) => {
-          console.log("Message Event Recieved", event)
-          const parsed = JSON.parse(event.data);
-          const { type, message } = parsed;
-          switch(type) {
-            case 'error': {
-              return toast.current.show({
-                sticky: true,
-                severity: 'error',
-                summary: 'Server Returned Websocket Error',
-                detail: message,
-              });
-            }
-            case 'notification': {
-              return toast.current.show({
-                sticky: true,
-                severity: 'info',
-                summary: message,
-              });
-            }
-            case 'messages/createMessage': {
-              console.log("GOT NEW MESSAGE??")
-              const { created_by, created_at }  = parsed;
-              return setMessages((messages) => {
-                return messages.concat([{
-                  message,
-                  created_by,
-                  created_at,
-                }])
-              })
-            }
-            default: {
-              return toast.current.show({
-                sticky: true,
-                severity: 'error',
-                summary: 'Server sent unidentified packet type.',
-              });
-            }
-          }
-        }
-
-        webSocketInstance.current.onerror = (event) => {
-          toast.current.show({
-            sticky: true,
-            severity: 'error',
-            summary: 'Server Returned Websocket Error',
-            detail: "WebSocket onError",
-          });
-          webSocketInstance.current.connected = false;
-          setSocketConnected(false);
-        }
-
-        webSocketInstance.current.onclose = (event) => {
-          toast.current.show({
-            sticky: true,
-            severity: 'info',
-            summary: 'WebSocket Connection Lost - Attemption Reconnection.',
-          });
-          webSocketInstance.current.connected = false;
-          setSocketConnected(false);
-        }
+  // Unmount Clean Up
+  useEffect(() => {
+    return () => {
+      if (webSocketInstance.current) {
+        webSocketInstance.current.unmounted = true;
+        webSocketInstance.current.close();
       }
     }
-  }, [isAuthenticated, toast, socketConnected, retries]);
+  }, []);
 
+  /*
   useEffect(() => {
     // Always use the most up-to-date instance ref property.
     if (webSocketInstance.current && !webSocketInstance.current.connected) {
@@ -186,6 +124,7 @@ function Chat({ user, isAuthenticated, toast }) {
     }
   }, []);
 
+  */
   useEffect(() => {
     if (isAuthenticated && !chatrooms.length) {
       setLoadingRooms(true)
@@ -258,7 +197,7 @@ function Chat({ user, isAuthenticated, toast }) {
             Users
           </div>
         </div>
-        <div class="feed">
+        <div className="feed">
           {
             activeView === 'chatrooms' ? 
             chatrooms.map(({ name, id }) => {
@@ -273,7 +212,7 @@ function Chat({ user, isAuthenticated, toast }) {
         <div className="messagebox flex-grow w-full flex flex-col">
           {
             messages.map(({ id, created_at, message, created_by }) => <div key={id} data-id={id}>
-                <div class="flex flex-wrap w-full"> 
+                <div className="flex flex-wrap w-full"> 
                   <strong>{created_by} ({created_at}):</strong>
                   <span>{message}</span>
                 </div>
