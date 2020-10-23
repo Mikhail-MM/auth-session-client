@@ -48,9 +48,7 @@ function Chat({ user, isAuthenticated, toast }) {
   const [newMessage, setNewMessage] = useState("");
 
   const [socketConnected, setSocketConnected] = useState(false);
-  const [renderKey, setRenderKey] = useState(0);
-
-  const retryAttempts = useRef(0);
+  const [retries, setRetries] = useState(0);
 
   const onViewChange = (e) => {
     const { viewkey } = e.target.dataset;
@@ -65,6 +63,7 @@ function Chat({ user, isAuthenticated, toast }) {
   const onNewMessageSubmit = (e) => {
     const { user_id, email } = user;
     e.preventDefault();
+    console.log(webSocketInstance.current);
     webSocketInstance.current.send(
       JSON.stringify({
         message: newMessage,
@@ -82,8 +81,11 @@ function Chat({ user, isAuthenticated, toast }) {
   }
 
   useEffect(() => {
+    console.log("Run the trap.", socketConnected, !webSocketInstance.current, !webSocketInstance?.current?.connected);
+    console.log((!socketConnected) && (isAuthenticated && (!webSocketInstance.current || !webSocketInstance.current.connected)))
     if (!socketConnected) {
       if (isAuthenticated && (!webSocketInstance.current || !webSocketInstance.current.connected)) {
+        console.log("A new websocket was initialized")
         webSocketInstance.current = new WebSocket(webSocketURI);
 
         webSocketInstance.current.onopen = (event) => {
@@ -92,7 +94,7 @@ function Chat({ user, isAuthenticated, toast }) {
             severity: 'success',
             summary: 'WebSocket Connection Established',
           });
-
+          console.log("It Opened")
           webSocketInstance.current.connected = true;
           setSocketConnected(true);
         }
@@ -118,6 +120,7 @@ function Chat({ user, isAuthenticated, toast }) {
               });
             }
             case 'messages/createMessage': {
+              console.log("GOT NEW MESSAGE??")
               const { created_by, created_at }  = parsed;
               return setMessages((messages) => {
                 return messages.concat([{
@@ -128,7 +131,11 @@ function Chat({ user, isAuthenticated, toast }) {
               })
             }
             default: {
-
+              return toast.current.show({
+                sticky: true,
+                severity: 'error',
+                summary: 'Server sent unidentified packet type.',
+              });
             }
           }
         }
@@ -155,22 +162,21 @@ function Chat({ user, isAuthenticated, toast }) {
         }
       }
     }
-  }, [isAuthenticated, toast, socketConnected, renderKey]);
+  }, [isAuthenticated, toast, socketConnected, retries]);
 
   useEffect(() => {
     // Always use the most up-to-date instance ref property.
     if (webSocketInstance.current && !webSocketInstance.current.connected) {
       const interval = setInterval(() => {
-        if (retryAttempts.current < maxRetries) {
+        if (retries < maxRetries) {
           console.log("Forcing a re-render.")
           // Force a re-render to cause the first webSocket responsible effect to re-run.
-          retryAttempts.current += 1;
-          setRenderKey((key) => key + 1);
+          setRetries((retries) => retries + 1);
         }
       }, 5000)
       return () => clearInterval(interval);
     }
-  }, [socketConnected]);
+  }, [socketConnected, retries]);
 
   useEffect(() => {
     return () => {
